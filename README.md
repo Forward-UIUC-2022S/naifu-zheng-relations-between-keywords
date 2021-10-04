@@ -10,7 +10,7 @@ and return up to three of the best sentences that describe the relationship bewt
 ## Functions:
 FindRelationship(String one, String two):
 
-The function will return a string list of max size 3, which will include the the three sentences that best 
+The function will return a string list of max size 3, which will include the the three sentences that best describe the relationship of the keywords based off web results and rankings.
 
 
 ### Example:
@@ -26,5 +26,15 @@ Up to three example sentences that relate to these keywords can be returned, lik
 Work in progress:
 rate based on syntax of summary sentences when training a model
 Unsure of what kind of model to use
-Which factors are important in good sentences,
+Which factors are important in good sentences.
+supervised, unsupervised
+
+### Packages:
+natural language processing:
+Spacy, NLTK, gensim
+
+Searching corpus () API:
+
+
+Google web crawler:
 
