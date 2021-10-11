@@ -5,7 +5,7 @@ This module will receive an input of 2 keywords, and attempt to parse corpus:
 https://arxiv.org/
 along with google search results
 
-and return up to three of the best sentences that describe the relationship bewteen the two keywords
+and return up to three of the best sentences that describe the relationship between the two keywords
 
 ## Functions:
 FindRelationship(String one, String two):
@@ -22,19 +22,32 @@ Up to three example sentences that relate to these keywords can be returned, lik
 
 
 ### Model Implementation:
-
 Work in progress:
 rate based on syntax of summary sentences when training a model
 Unsure of what kind of model to use
 Which factors are important in good sentences.
 supervised, unsupervised
 
+Current Model:
+After breaking down a snippet using SpaCy, 
+apply predermined rules of syntax and sentence structure
+in order to determine a score of the snippet
+Return the highest snippet scores
+
+Currently considered rules:
+including both keywords
+connected by dependency path
+
+
 ### Packages:
 natural language processing:
-Spacy, NLTK, gensim
+Spacy
+Download using:
+pip install -U spacy
+
 
 Searching corpus () API:
-
+https://arxiv.org/help/api/basics
 
 Google web crawler:
 
