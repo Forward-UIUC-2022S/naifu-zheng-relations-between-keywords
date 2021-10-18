@@ -79,7 +79,7 @@ def searchJsonFile(word_one, word_two, path):
         with open(path) as json_file:
                 json_data = json.load(json_file)
                 # search for abstracts that fit the expected path
-                for value in json_data.values():
+                for value in json_data:
                         if (word_one in value['abstract']) and (word_two in value['abstract']):
                                 snippets.append(value['abstract'])
 
