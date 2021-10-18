@@ -1,4 +1,3 @@
-
 class SnippetDetails:
 
     # can store individual details
@@ -6,6 +5,6 @@ class SnippetDetails:
     score = 0
 
     def __init__(self, string):
-        this.string = string
+        self.string = string
 
     
