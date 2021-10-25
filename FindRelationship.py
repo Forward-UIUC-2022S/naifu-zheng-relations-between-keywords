@@ -2,6 +2,13 @@ import spacy
 from SnippetDetails import SnippetDetails
 #import nltk import Tree
 from spacy.pipeline.dep_parser import DEFAULT_PARSER_MODEL
+from urllib.request import Request, urlopen
+import requests
+
+from bs4 import BeautifulSoup
+
+from googlesearch import search
+
 config = {
    "moves": None,
    "update_with_oracle_cut_size": 100,
@@ -58,6 +65,8 @@ def FindRelationship(word_one, word_two, n=3):
 
         # currently using hard coded phrases
         snippet_list = [google_one, google_two, google_three]
+        google_result = SearchGoogle(word_one, word_two)
+        snippet_list.extend(google_result)
         scores = []
         for snippet in snippet_list:
                 updated_snippet = ScoreSentence(snippet, word_one, word_two)
@@ -66,7 +75,9 @@ def FindRelationship(word_one, word_two, n=3):
         print(scores)
 
 def FindRelationshipJson(word_one, word_two, json_path, n=3):
-        snippet_list = searchJsonFile(word_one, word_two, json_path)
+        snippet_list = SearchJsonFile(word_one, word_two, json_path)
+        google_result = SearchGoogle(word_one, word_two)
+        snippet_list.extend(google_result)
         scores = []
         for snippet in snippet_list:
                 updated_snippet = ScoreSentence(snippet, word_one, word_two)
@@ -74,19 +85,64 @@ def FindRelationshipJson(word_one, word_two, json_path, n=3):
 
         print(scores)
 
-def searchJsonFile(word_one, word_two, path):
+def Lemmatization(words):
+        processed = nlp(words)
+        result = ""
+        for token in processed:
+                result += token.lemma_
+        return result
+
+def SearchJsonFile(word_one, word_two, path):
         snippets = []
         with open(path) as json_file:
                 json_data = json.load(json_file)
+                # simplify words down into lemmmas, so that the words can be found
+                nlp(word_one)
                 # search for abstracts that fit the expected path
                 for value in json_data:
-                        if (word_one in value['abstract']) and (word_two in value['abstract']):
+                        compare = value['abstract'].replace(" ", "")
+                        if (word_one in compare) and (word_two in compare):
                                 snippets.append(value['abstract'])
 
         return snippets
 
-def searchGoogle(word_one, word_two):
+def SearchGoogle(word_one, word_two):
         snippets = []
+        # replace space with + for google query
+        item_one = word_one.replace(' ', '+')
+        item_two = word_two.replace(' ', '+')
+        google_query = 'https://www.google.com/search?q='+item_one+'+'+item_two
+        #request_results = Request(google_query, headers={'User-Agent': 'Mozilla/5.0'})
+        #search_results = urlopen(request_results).read()
+
+        # parse the html file returned by google
+        #r = requests.get(google_query)
+        #search_results = r.text
+        #soup = BeautifulSoup(search_results, 'html.parser')
+        #for s in soup.find_all(id="rhs_block"):
+        #        print(s.text)
+        #for i in soup.find_all('div',{'class':'post-info-wrap'}):
+        #        link = i.find('a',href=True)
+        #        if link != None:
+        #                print(link['href'])
+        #urls = []
+        #for searchWrapper in soup.find_all('h3', {'class':'r'}):
+        #        urls.append(searchWrapper.find('a')["href"]) 
+        #print(soup.prettify())
+
+        #google_results = search(google_query, tld="co.in", num=10, stop=10, pause=2)
+        #for link in google_results:
+        #        print(link)
+        #with requests.Session() as s:
+        #        headers = {
+        #                "referer":"referer: https://www.google.com/",
+        #                "user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
+        #                }
+        #        s.post(google_query, headers=headers)
+        #        response = s.get(google_query, headers=headers)
+        #        soup = BeautifulSoup(response.text, 'html.parser')
+        #        links = soup.findAll("a")
+        #print(links)
         return snippets
 
 ## helper function taken from
