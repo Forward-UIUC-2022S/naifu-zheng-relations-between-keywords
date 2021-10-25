@@ -30,24 +30,24 @@ Up to three(default) example sentences that relate to these keywords can be retu
 "A B-tree is a tree data structure that keeps data sorted and allows searches, insertions, and deletions in logarithmic amortized time"
 
 
-### Model Implementation:
-Work in progress:
-rate based on syntax of summary sentences when training a model
-Unsure of what kind of model to use
-Which factors are important in good sentences.
-supervised, unsupervised
-
+### Algorithmic Design / Model Implementation:
 Current Model:
 After breaking down a snippet using SpaCy, 
 apply predermined rules of syntax and sentence structure
 in order to determine a score of the snippet
 Return the highest snippet scores
 
+Possible considerations in the future:
+With rated sentences from predetermined rules,
+a model can be created being trained from these sentences, 
+and continue rating other sentences for possibly higher accuracy
+
 Currently considered rules:
 including both keywords
-connected by dependency path
+connected by dependency path, a higher score the closer the path
 length of snippet
 number of sentences
+original rating(from google or json files)
 
 
 ### Packages:

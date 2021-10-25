@@ -101,7 +101,7 @@ def SearchJsonFile(word_one, word_two, path):
                 # search for abstracts that fit the expected path
                 for value in json_data:
                         compare = value['abstract'].replace(" ", "")
-                        if (word_one in compare) and (word_two in compare):
+                        if (word_one in compare) or (word_two in compare):
                                 snippets.append(value['abstract'])
 
         return snippets
