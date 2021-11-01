@@ -49,6 +49,11 @@ length of snippet
 number of sentences
 original rating(from google or json files)
 
+Here is an overall flowchart that describes the process from input to output
+![Overall Flowchart](https://github.com/Forward-UIUC-2021F/Meaningful-Relations-Between-Keywords/blob/main/Overall_Flowchart.png)
+
+![Scoring Flowchart](https://github.com/Forward-UIUC-2021F/Meaningful-Relations-Between-Keywords/blob/main/Scoring.png)
+
 
 ### Packages:
 natural language processing:
