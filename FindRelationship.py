@@ -31,22 +31,37 @@ google_three = "B-tree is a data structure that store data in its node in sorted
 
 def ScoreSentence(snippet, word_one, word_two):
         snippet_details = SnippetDetails(snippet)
-        print(type(snippet))
         processed = nlp(snippet)
+        print("\nstart of snippet:\n")
+        print(snippet)
         for token in processed:
                 # searching for dependencies between the keywords
                 # don't care about case sensitivity
                 if (token.text.casefold() == word_one.casefold()):
-                        if (word_two in token.children):
-                                snippet_details.score += 200
-                                # if found, add score and stop searching
-                                break
+                        children = [child for child in token.children]
+                        for child in children:
+                                if (word_two in child.text):
+                                        snippet_details.score += 200
+                                        # if found, add score and stop searching
+                                        break
+                                grandchildren = [child for child in child.children]
+                                for grandchild in grandchildren:
+                                        if (word_one in grandchild.text):
+                                                snippet_details.score += 100
+                                                break
 
                 if (token.text.casefold() == word_two.casefold()):
-                        if (word_one in token.children):
-                                snippet_details.score += 200
-                                # if found, add score and stop searching
-                                break
+                        children = [child for child in token.children]
+                        for child in children:
+                                if (word_one in child.text):
+                                        snippet_details.score += 200
+                                        # if found, add score and stop searching
+                                        break
+                                grandchildren = [child for child in child.children]
+                                for grandchild in grandchildren:
+                                        if (word_one in grandchild.text):
+                                                snippet_details.score += 100
+                                                break
 
                 # take one point off for each word in the snippet
                 snippet_details.score -= 1
@@ -97,12 +112,18 @@ def SearchJsonFile(word_one, word_two, path):
         with open(path) as json_file:
                 json_data = json.load(json_file)
                 # simplify words down into lemmmas, so that the words can be found
-                nlp(word_one)
+                simplified_one = Lemmatization(word_one)
+                simplified_two = Lemmatization(word_two)
                 # search for abstracts that fit the expected path
                 for value in json_data:
+                        #simplified_abstract = Lemmatization(value['abstract'])
                         compare = value['abstract'].replace(" ", "")
-                        if (word_one in compare) or (word_two in compare):
-                                snippets.append(value['abstract'])
+                        # check each sentence
+                        sentences = compare.split(".")
+                        for i in range(len(sentences)):
+                                if (simplified_one in sentences[i]) or (simplified_two in sentences[i]):
+                                        snippets.append(value['abstract'].split(".")[i] + ".")
+                        
 
         return snippets
 
@@ -112,13 +133,15 @@ def SearchGoogle(word_one, word_two):
         item_one = word_one.replace(' ', '+')
         item_two = word_two.replace(' ', '+')
         google_query = 'https://www.google.com/search?q='+item_one+'+'+item_two
-        #request_results = Request(google_query, headers={'User-Agent': 'Mozilla/5.0'})
-        #search_results = urlopen(request_results).read()
+        request_results = Request(google_query, headers={'User-Agent': 'Mozilla/5.0'})
+        search_results = urlopen(request_results).read()
+        #print(search_results)
 
         # parse the html file returned by google
         #r = requests.get(google_query)
         #search_results = r.text
         #soup = BeautifulSoup(search_results, 'html.parser')
+        #print(soup.beautify())
         #for s in soup.find_all(id="rhs_block"):
         #        print(s.text)
         #for i in soup.find_all('div',{'class':'post-info-wrap'}):
