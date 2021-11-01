@@ -52,6 +52,7 @@ original rating(from google or json files)
 Here is an overall flowchart that describes the process from input to output
 ![Overall Flowchart](https://github.com/Forward-UIUC-2021F/Meaningful-Relations-Between-Keywords/blob/main/Overall_Flowchart.png)
 
+Here is a flowchart explaining how the snippets are scored
 ![Scoring Flowchart](https://github.com/Forward-UIUC-2021F/Meaningful-Relations-Between-Keywords/blob/main/Scoring.png)
 
 
