@@ -21,6 +21,11 @@ Instead of searching the web or a file, the sentences are already given and can 
 ScoreSentence(snippet, word_one, word_two):
 Scores a snippet based off of the algorithm mentioned below, returning an integer value that can be negative, 0, or positive.
 
+SearchJsonFile(word_one, word_two, path):
+Searches through the inputted json file for sentences/snippets that contain word one and word two.
+
+
+
 
 ### Example:
 When calling the function with keywords like

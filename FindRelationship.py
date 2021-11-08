@@ -6,7 +6,7 @@ from urllib.request import Request, urlopen
 import requests
 
 from bs4 import BeautifulSoup
-
+from operator import attrgetter
 from googlesearch import search
 
 config = {
@@ -23,17 +23,18 @@ nlp = spacy.load("en_core_web_sm")
 # add default dependency parsing with spacy
 #nlp.add_pipe("parser", config=config)
 # good sentence
-google_one = "In computer science, a B-tree is a self-balancing tree data structure that maintains sorted data and allows searches, sequential access, insertions, and deletions in logarithmic time."
+google_one = "In computer science, a Btree is a self-balancing tree data structure that maintains sorted data and allows searches, sequential access, insertions, and deletions in logarithmic time."
 # missing second keyword
-google_two = "The B-tree generalizes the binary search tree, allowing for nodes with more than two children."
+google_two = "The Btree generalizes the binary search tree, allowing for nodes with more than two children."
 # Concise, but lacks information
-google_three = "B-tree is a data structure that store data in its node in sorted order"
+google_three = "Btree is a data structure that store data in its node in sorted order"
 
 def ScoreSentence(snippet, word_one, word_two):
         snippet_details = SnippetDetails(snippet)
         processed = nlp(snippet)
-        print("\nstart of snippet:\n")
-        print(snippet)
+        #print("\nstart of snippet:\n")
+        #print(Lemmatization("Machine Learning"))
+        #print(snippet)
         for token in processed:
                 # searching for dependencies between the keywords
                 # don't care about case sensitivity
@@ -85,20 +86,42 @@ def FindRelationship(word_one, word_two, n=3):
         scores = []
         for snippet in snippet_list:
                 updated_snippet = ScoreSentence(snippet, word_one, word_two)
-                scores.append(updated_snippet.score)
+                scores.append(updated_snippet)
 
-        print(scores)
+        PrintBestScores(scores, n)
 
 def FindRelationshipJson(word_one, word_two, json_path, n=3):
         snippet_list = SearchJsonFile(word_one, word_two, json_path)
         google_result = SearchGoogle(word_one, word_two)
         snippet_list.extend(google_result)
+
+        snippet_list.append(google_one)
+        snippet_list.append(google_two)
+        snippet_list.append(google_three)
+
         scores = []
         for snippet in snippet_list:
                 updated_snippet = ScoreSentence(snippet, word_one, word_two)
-                scores.append(updated_snippet.score)
+                scores.append(updated_snippet)
+        PrintBestScores(scores, n)
+        
+def PrintBestScores(scores, n):
+        #scores = scores.sort()
+        scores.sort(key=attrgetter('score'))
 
-        print(scores)
+        for i in range(len(scores)):
+                print(scores[i].score)
+
+        if (n > len(scores)):
+                print("Not enough good snippets found. Returning top " + len(scores) + " snippets instead")
+
+        snippet_count = min(len(scores), n)
+        print("Printing top " + str(snippet_count) + " snippets")
+        for i in range(snippet_count):
+                cur_index = len(scores) - i - 1
+                print("Snippet " + str(cur_index) + " sentence:")
+                print(scores[cur_index].string)
+                print("With a score of " + str(scores[cur_index].score))
 
 def Lemmatization(words):
         processed = nlp(words)
@@ -106,6 +129,33 @@ def Lemmatization(words):
         for token in processed:
                 result += token.lemma_
         return result
+
+def LemmatizeEntireFile(input_path, output_path):
+
+        # create or delete output_path
+        try:
+                open(output_path, "w")
+                print("output path file found, overwriting contents")
+        except IOError:
+                print("output path file not found, creating one instead")
+
+        with open(input_path) as json_file:
+                with open(output_path, "a") as output_file:
+                        json_data = json.load(json_file)
+                        print("LENGTH =========== ")
+                        print(len(json_data))
+                        i = 0
+                        cut_json = json_data[:5000]
+                        for value in cut_json:
+                                print(i)
+                                i += 1
+                                lemmatized = Lemmatization(value['abstract'])
+                                to_write = {
+                                        "abstract" : lemmatized,
+                                }
+                                json.dump(to_write, output_file)
+                        output_file.close()
+                
 
 def SearchJsonFile(word_one, word_two, path):
         snippets = []
