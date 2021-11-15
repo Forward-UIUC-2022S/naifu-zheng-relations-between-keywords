@@ -45,7 +45,7 @@ def ScoreSentence(snippet, word_one, word_two):
         for token in processed:
                 # searching for dependencies between the keywords
                 # don't care about case sensitivity
-                if (token.text.casefold() == word_one.casefold()):
+                if (token.text.lower() in word_one.lower()):
                         children = [child for child in token.children]
                         for child in children:
                                 if (word_two in child.text):
@@ -58,7 +58,7 @@ def ScoreSentence(snippet, word_one, word_two):
                                                 snippet_details.score += 100
                                                 break
 
-                if (token.text.casefold() == word_two.casefold()):
+                if (token.text.lower() in word_two.lower()):
                         children = [child for child in token.children]
                         for child in children:
                                 if (word_one in child.text):
@@ -75,9 +75,9 @@ def ScoreSentence(snippet, word_one, word_two):
                 snippet_details.score -= 1
 
 
-        if (word_one in snippet):
+        if (word_one.lower() in snippet.lower()):
                 snippet_details.score += 100
-        if (word_two in snippet):
+        if (word_two.lower() in snippet.lower()):
                 snippet_details.score += 100
 
         return snippet_details
@@ -141,7 +141,7 @@ def PrintBestScores(scores, n):
         print("Printing top " + str(snippet_count) + " snippets")
         for i in range(snippet_count):
                 cur_index = len(scores) - i - 1
-                print("Snippet " + str(cur_index) + " sentence:")
+                print("Snippet " + i + " sentence:")
                 print(scores[cur_index].string)
                 print("With a score of " + str(scores[cur_index].score))
 
@@ -200,7 +200,7 @@ def SearchJsonFile(word_one, word_two, path, modified_json_path=None):
                                                 # print(json_data[i]['abstract'])
                                                 sentences = snippet.split(".")
                                                 for j in range(len(sentences)):
-                                                        if (simplified_one in sentences[j] or simplified_two in sentences[]):
+                                                        if (simplified_one in sentences[j] or simplified_two in sentences[j]):
                                                                 snippets.append(json_data[i]['abstract'].split(".")[j] + ".")
                                         
                 # searching regular json file
@@ -261,11 +261,16 @@ def SearchGoogle(word_one, word_two):
         #        links = soup.findAll("a")
         #print(links)
         
-        response = GoogleSearch().search("something")
-        for result in response.results:
-                print("Title: " + result.title)
-                print("Content: " + result.getText())
+        # response = GoogleSearch().search(word_one + " " + word_two)
+        # for result in response.results:
+        #         print("Title: " + result.title)
+        #         print("Content: " + result.getText())
         
+        page = requests.get(google_query).text
+        soup = BeautifulSoup(page, "html.parser").select(".s3v9rd.AP7Wnd")
+        for item in soup:
+                snippets.add(item.getText(strip=True))
+                        
         return snippets
 
 ## helper function taken from
