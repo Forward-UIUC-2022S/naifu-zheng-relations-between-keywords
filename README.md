@@ -74,3 +74,7 @@ filtered_arxiv.json
 Google web crawler:
 
 
+Using TQDM to display progress bar:
+https://github.com/tqdm/tqdm
+pip install tqdm
+

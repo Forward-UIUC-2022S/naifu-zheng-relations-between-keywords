@@ -7,7 +7,14 @@ import requests
 
 from bs4 import BeautifulSoup
 from operator import attrgetter
-from googlesearch import search
+#from googlesearch import search
+from googlesearch.googlesearch import GoogleSearch
+
+# progress bar
+from tqdm import tqdm
+
+# copying file
+from shutil import copyfile
 
 config = {
    "moves": None,
@@ -105,6 +112,21 @@ def FindRelationshipJson(word_one, word_two, json_path, n=3):
                 scores.append(updated_snippet)
         PrintBestScores(scores, n)
         
+def FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_path, n=3):
+        snippet_list = SearchJsonFile(word_one, word_two, json_path, modified_json_path)
+        google_result = SearchGoogle(word_one, word_two)
+        snippet_list.extend(google_result)
+
+        snippet_list.append(google_one)
+        snippet_list.append(google_two)
+        snippet_list.append(google_three)
+
+        scores = []
+        for snippet in snippet_list:
+                updated_snippet = ScoreSentence(snippet, word_one, word_two)
+                scores.append(updated_snippet)
+        PrintBestScores(scores, n)
+        
 def PrintBestScores(scores, n):
         #scores = scores.sort()
         scores.sort(key=attrgetter('score'))
@@ -133,46 +155,68 @@ def Lemmatization(words):
 def LemmatizeEntireFile(input_path, output_path):
 
         # create or delete output_path
-        try:
-                open(output_path, "w")
-                print("output path file found, overwriting contents")
-        except IOError:
-                print("output path file not found, creating one instead")
+        # try:
+        #         open(output_path, "w")
+        #         print("output path file found, overwriting contents")
+        # except IOError:
+        #         print("output path file not found, creating one instead")
+        
+        copyfile(input_path, output_path)
 
-        with open(input_path) as json_file:
-                with open(output_path, "a") as output_file:
-                        json_data = json.load(json_file)
-                        print("LENGTH =========== ")
-                        print(len(json_data))
-                        i = 0
-                        cut_json = json_data[:5000]
-                        for value in cut_json:
-                                print(i)
-                                i += 1
-                                lemmatized = Lemmatization(value['abstract'])
-                                to_write = {
-                                        "abstract" : lemmatized,
-                                }
-                                json.dump(to_write, output_file)
-                        output_file.close()
-                
+        with open(output_path, "r") as output_file:
+                json_data = json.load(output_file)
+                print("LENGTH =========== ")
+                print(len(json_data))
+                #cut_json = json_data[:295306]
+                size_to_lemma = 50000
+                json_data = json_data[:size_to_lemma]
+                for i in tqdm(range(size_to_lemma)):
+                        # value = json_data[i]
+                        json_data[i]['abstract'] = Lemmatization(json_data[i]['abstract'])
+                        # lemmatized = Lemmatization(value['abstract'])
+                        # to_write = {
+                        #         "abstract" : lemmatized,
+                        # }
+                        # json.dump(to_write, output_file)
+                output_file.close()
+        with open(output_path, 'w') as output_file:
+                output_file.write(json.dumps(json_data))
 
-def SearchJsonFile(word_one, word_two, path):
+def SearchJsonFile(word_one, word_two, path, modified_json_path=None):
         snippets = []
         with open(path) as json_file:
-                json_data = json.load(json_file)
-                # simplify words down into lemmmas, so that the words can be found
-                simplified_one = Lemmatization(word_one)
-                simplified_two = Lemmatization(word_two)
-                # search for abstracts that fit the expected path
-                for value in json_data:
-                        #simplified_abstract = Lemmatization(value['abstract'])
-                        compare = value['abstract'].replace(" ", "")
-                        # check each sentence
-                        sentences = compare.split(".")
-                        for i in range(len(sentences)):
-                                if (simplified_one in sentences[i]) or (simplified_two in sentences[i]):
-                                        snippets.append(value['abstract'].split(".")[i] + ".")
+                simplified_one = Lemmatization(word_one).lower()
+                simplified_two = Lemmatization(word_two).lower()
+                # lemmatized json file has been initialized already
+                if modified_json_path != None:
+                        with open(modified_json_path) as modified_json_file:
+                                json_data = json.load(json_file)
+                                modified_json_data = json.load(modified_json_file)
+                                length = min(len(json_data), len(modified_json_data))
+                                for i in range(length):
+                                        snippet = modified_json_data[i]['abstract'].lower()
+                                        if (simplified_one in snippet or simplified_two in snippet):
+                                                # print(snippet)
+                                                # print(json_data[i]['abstract'])
+                                                sentences = snippet.split(".")
+                                                for j in range(len(sentences)):
+                                                        if (simplified_one in sentences[j] or simplified_two in sentences[]):
+                                                                snippets.append(json_data[i]['abstract'].split(".")[j] + ".")
+                                        
+                # searching regular json file
+                else:
+                        json_data = json.load(json_file)
+                        # simplify words down into lemmmas, so that the words can be found
+                        
+                        # search for abstracts that fit the expected path
+                        for value in json_data:
+                                #simplified_abstract = Lemmatization(value['abstract'])
+                                compare = value['abstract'].replace(" ", "")
+                                # check each sentence
+                                sentences = compare.split(".")
+                                for i in range(len(sentences)):
+                                        if (simplified_one in sentences[i]) or (simplified_two in sentences[i]):
+                                                snippets.append(value['abstract'].split(".")[i] + ".")
                         
 
         return snippets
@@ -216,6 +260,12 @@ def SearchGoogle(word_one, word_two):
         #        soup = BeautifulSoup(response.text, 'html.parser')
         #        links = soup.findAll("a")
         #print(links)
+        
+        response = GoogleSearch().search("something")
+        for result in response.results:
+                print("Title: " + result.title)
+                print("Content: " + result.getText())
+        
         return snippets
 
 ## helper function taken from
