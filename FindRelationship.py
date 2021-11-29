@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from operator import attrgetter
 #from googlesearch import search
 from googlesearch.googlesearch import GoogleSearch
+import re
 
 # progress bar
 from tqdm import tqdm
@@ -26,6 +27,11 @@ config = {
 
 import json
 
+# default weighting for google results
+google_base_weight = 100
+google_weight_scale = 5
+max_search_count = 20
+
 nlp = spacy.load("en_core_web_sm")
 # add default dependency parsing with spacy
 #nlp.add_pipe("parser", config=config)
@@ -36,8 +42,9 @@ google_two = "The Btree generalizes the binary search tree, allowing for nodes w
 # Concise, but lacks information
 google_three = "Btree is a data structure that store data in its node in sorted order"
 
-def ScoreSentence(snippet, word_one, word_two):
+def ScoreSentence(snippet, word_one, word_two, base_score = 0):
         snippet_details = SnippetDetails(snippet)
+        snippet_details.score = base_score
         processed = nlp(snippet)
         #print("\nstart of snippet:\n")
         #print(Lemmatization("Machine Learning"))
@@ -82,47 +89,88 @@ def ScoreSentence(snippet, word_one, word_two):
 
         return snippet_details
 
-def FindRelationship(word_one, word_two, n=3):
+def FindRelationship(word_one, word_two, n=3, deeper_web_search=False):
         # TODO: search google and corpus for snippets of sentences containing
         # the relationship of word 1 and 2
 
         # currently using hard coded phrases
         snippet_list = [google_one, google_two, google_three]
-        google_result = SearchGoogle(word_one, word_two)
+        google_result = SearchGoogle(word_one, word_two, deeper_web_search)
         snippet_list.extend(google_result)
         scores = []
+        base_score = google_base_weight
         for snippet in snippet_list:
-                updated_snippet = ScoreSentence(snippet, word_one, word_two)
+                updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score)
                 scores.append(updated_snippet)
+                
+                base_score -= google_weight_scale
+                if (base_score < 0):
+                        base_score = 0
 
         PrintBestScores(scores, n)
 
-def FindRelationshipJson(word_one, word_two, json_path, n=3):
+def FindRelationshipJson(word_one, word_two, json_path, n=3, deeper_web_search=False):
         snippet_list = SearchJsonFile(word_one, word_two, json_path)
-        google_result = SearchGoogle(word_one, word_two)
-        snippet_list.extend(google_result)
+        
+        
 
         snippet_list.append(google_one)
         snippet_list.append(google_two)
         snippet_list.append(google_three)
 
         scores = []
-        for snippet in snippet_list:
+        cur_size = len(snippet_list)
+        for i in range(cur_size):
+                snippet = snippet_list[i]
                 updated_snippet = ScoreSentence(snippet, word_one, word_two)
                 scores.append(updated_snippet)
-        PrintBestScores(scores, n)
-        
-def FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_path, n=3):
-        snippet_list = SearchJsonFile(word_one, word_two, json_path, modified_json_path)
-        google_result = SearchGoogle(word_one, word_two)
+
+        google_result = SearchGoogle(word_one, word_two, deeper_web_search=False)
         snippet_list.extend(google_result)
+        
+        base_score = google_base_weight
+        for i in range(cur_size, len(snippet_list)):
+                updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score)
+                scores.append(updated_snippet)
+                
+                base_score -= google_weight_scale
+                if (base_score < 0):
+                        base_score = 0
+                
+        PrintBestScores(scores, n)
+
+# add additional argument for filtered json file,
+def FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_path, n=3, deeper_web_search=False):
+        snippet_list = SearchJsonFile(word_one, word_two, json_path, modified_json_path)
+        
 
         snippet_list.append(google_one)
         snippet_list.append(google_two)
         snippet_list.append(google_three)
 
         scores = []
-        for snippet in snippet_list:
+        cur_size = len(snippet_list)
+        for i in range(cur_size):
+                snippet = snippet_list[i]
+                updated_snippet = ScoreSentence(snippet, word_one, word_two)
+                scores.append(updated_snippet)
+                
+        google_result = SearchGoogle(word_one, word_two, deeper_web_search=False)
+        snippet_list.extend(google_result)
+        base_score = google_base_weight
+        for i in range(cur_size, len(snippet_list)):
+                updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score)
+                scores.append(updated_snippet)
+                
+                base_score -= google_weight_scale
+                if (base_score < 0):
+                        base_score = 0
+        
+        PrintBestScores(scores, n)
+
+def FindRelationshipGivenSentences(word_one, word_two, list, n=3):
+        scores = []
+        for snippet in list:
                 updated_snippet = ScoreSentence(snippet, word_one, word_two)
                 scores.append(updated_snippet)
         PrintBestScores(scores, n)
@@ -141,7 +189,7 @@ def PrintBestScores(scores, n):
         print("Printing top " + str(snippet_count) + " snippets")
         for i in range(snippet_count):
                 cur_index = len(scores) - i - 1
-                print("Snippet " + i + " sentence:")
+                print("Snippet " + str(i) + " sentence:")
                 print(scores[cur_index].string)
                 print("With a score of " + str(scores[cur_index].score))
 
@@ -221,56 +269,37 @@ def SearchJsonFile(word_one, word_two, path, modified_json_path=None):
 
         return snippets
 
-def SearchGoogle(word_one, word_two):
+def SearchGoogle(word_one, word_two, deeper_web_search=False):
         snippets = []
         # replace space with + for google query
         item_one = word_one.replace(' ', '+')
         item_two = word_two.replace(' ', '+')
         google_query = 'https://www.google.com/search?q='+item_one+'+'+item_two
-        request_results = Request(google_query, headers={'User-Agent': 'Mozilla/5.0'})
-        search_results = urlopen(request_results).read()
-        #print(search_results)
-
-        # parse the html file returned by google
-        #r = requests.get(google_query)
-        #search_results = r.text
-        #soup = BeautifulSoup(search_results, 'html.parser')
-        #print(soup.beautify())
-        #for s in soup.find_all(id="rhs_block"):
-        #        print(s.text)
-        #for i in soup.find_all('div',{'class':'post-info-wrap'}):
-        #        link = i.find('a',href=True)
-        #        if link != None:
-        #                print(link['href'])
-        #urls = []
-        #for searchWrapper in soup.find_all('h3', {'class':'r'}):
-        #        urls.append(searchWrapper.find('a')["href"]) 
-        #print(soup.prettify())
-
-        #google_results = search(google_query, tld="co.in", num=10, stop=10, pause=2)
-        #for link in google_results:
-        #        print(link)
-        #with requests.Session() as s:
-        #        headers = {
-        #                "referer":"referer: https://www.google.com/",
-        #                "user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
-        #                }
-        #        s.post(google_query, headers=headers)
-        #        response = s.get(google_query, headers=headers)
-        #        soup = BeautifulSoup(response.text, 'html.parser')
-        #        links = soup.findAll("a")
-        #print(links)
         
-        # response = GoogleSearch().search(word_one + " " + word_two)
-        # for result in response.results:
-        #         print("Title: " + result.title)
-        #         print("Content: " + result.getText())
+        # getting snippets from google search
+        page = requests.get(google_query)
+        html_page = page.text
+        # takes the snippet from the page
+        soup = BeautifulSoup(html_page, "html.parser")
+        snippet_soup = soup.select(".s3v9rd.AP7Wnd")
+
+        # get links from 
+        # https://stackoverflow.com/questions/25471450/python-getting-all-links-from-a-google-search-result-page
+        for link in soup.find_all("a",href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
+                full_link = re.split(":(?=http)",link["href"].replace("/url?q=",""))
+                print(full_link)
         
-        page = requests.get(google_query).text
-        soup = BeautifulSoup(page, "html.parser").select(".s3v9rd.AP7Wnd")
-        for item in soup:
-                snippets.add(item.getText(strip=True))
+        # direct snippets from google
+        for item in snippet_soup:
+                # dont want repeats
+                to_add = item.getText(strip=True)
+                if (to_add not in snippets):
+                        #print("hi....")
+                        #print(to_add)
                         
+                        snippets.append(to_add)
+                        if (len(snippets) >= max_search_count):
+                                break
         return snippets
 
 ## helper function taken from

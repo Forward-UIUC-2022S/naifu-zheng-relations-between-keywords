@@ -8,21 +8,20 @@ along with google search results
 and return up to three of the best sentences that describe the relationship between the two keywords
 
 ## Functions/Functional Design:
-FindRelationship(String one, String two, int n=3):
-The function will return a string list of max size n(default 3), which will include the the three snippets that best describe the relationship of the keywords based off web results and rankings.
+FindRelationship(String word_one, String word_two, int n=3, bool deeper_web_search=False):
+The function will return a string list of max size n(default 3), which will include the the three snippets that best describe the relationship of the keywords based off web results and rankings. Paramater deeper_web_search will attempt to search additional websites for better snippets if set as true.
 
+FindRelationshipJson(String word_one, String word_two, json_path, int n=3, bool deeper_web_search=False):
+Additional parameter to search a json file for additional snippets if needed.
 
-FindRelationship(String one, String two, int n=3, String json_path):
-In addition to web results, also search and rate strings from a json file.
+FindRelationshipGivenSentences(String word_one, String word_two, String[] list, int n=3):
+Instead of searching the web or a file, the sentences are already given and can be directly scored for the best n snippets.
 
-FindRelationship(String one, String two, int n=3, String[] list):
-Instead of searching the web or a file, the sentences are already given and can be searched for the best n snippets.
-
-ScoreSentence(snippet, word_one, word_two):
-Scores a snippet based off of the algorithm mentioned below, returning an integer value that can be negative, 0, or positive.
+ScoreSentence(snippet, word_one, word_two, base_score=0):
+Scores a snippet based off of the algorithm mentioned below, returning an integer value that can be negative, 0, or positive. Starts with a default value of 0, but additional weights can be added
 
 SearchJsonFile(word_one, word_two, path):
-Searches through the inputted json file for sentences/snippets that contain word one and word two.
+Searches through the inputted json file for sentences/snippets that contain word one and/or word two.
 
 
 
@@ -71,8 +70,8 @@ pip install -U spacy
 Searching corpus arxiv using snapshot JSON file:
 filtered_arxiv.json
 
-Google web crawler:
-
+Google web requests:
+using Requests python library
 
 Using TQDM to display progress bar:
 https://github.com/tqdm/tqdm
