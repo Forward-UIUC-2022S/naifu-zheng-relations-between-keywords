@@ -112,8 +112,6 @@ def FindRelationship(word_one, word_two, n=3, deeper_web_search=False):
 def FindRelationshipJson(word_one, word_two, json_path, n=3, deeper_web_search=False):
         snippet_list = SearchJsonFile(word_one, word_two, json_path)
         
-        
-
         snippet_list.append(google_one)
         snippet_list.append(google_two)
         snippet_list.append(google_three)
@@ -288,6 +286,9 @@ def SearchGoogle(word_one, word_two, deeper_web_search=False):
         for link in soup.find_all("a",href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
                 full_link = re.split(":(?=http)",link["href"].replace("/url?q=",""))
                 print(full_link)
+                cur_html_page = requests.get(google_query).text
+                #print(cur_html_page)
+                soup = BeautifulSoup(cur_html_page, "html.parser")
         
         # direct snippets from google
         for item in snippet_soup:

@@ -23,7 +23,11 @@ Scores a snippet based off of the algorithm mentioned below, returning an intege
 SearchJsonFile(word_one, word_two, path):
 Searches through the inputted json file for sentences/snippets that contain word one and/or word two.
 
+LemmatizeEntireFile(input_path, output_path):
+Takes the lemma of the entire input json file and writes it into the output_path. Useful for better search accuracy for keywords. Should be used in conjunction with FindRelationshipModifiedJson
 
+FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_path, n=3, deeper_web_search=False):
+Uses modified_json_path to search for keywords, but still returns snippets from json_path. Note: json_path will need to be the same input_path given in LemmatizeEntireFile, otherwise the wrong snippet may be rated.
 
 
 ### Example:
