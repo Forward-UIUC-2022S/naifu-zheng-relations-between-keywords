@@ -5,7 +5,7 @@ This module will receive an input of 2 keywords, and attempt to parse corpus:
 https://arxiv.org/
 along with google search results
 
-and return up to three of the best sentences that describe the relationship between the two keywords
+and return up to three of the best snippets that describe the relationship between the two keywords
 
 ## Functions/Functional Design:
 FindRelationship(String word_one, String word_two, int n=3, bool deeper_web_search=False):
@@ -79,5 +79,6 @@ using Requests python library
 
 Using TQDM to display progress bar:
 https://github.com/tqdm/tqdm
+Download using:
 pip install tqdm
 

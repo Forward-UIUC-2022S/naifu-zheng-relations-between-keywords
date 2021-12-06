@@ -94,7 +94,7 @@ def FindRelationship(word_one, word_two, n=3, deeper_web_search=False):
         # the relationship of word 1 and 2
 
         # currently using hard coded phrases
-        snippet_list = [google_one, google_two, google_three]
+        snippet_list = []
         google_result = SearchGoogle(word_one, word_two, deeper_web_search)
         snippet_list.extend(google_result)
         scores = []
@@ -111,10 +111,6 @@ def FindRelationship(word_one, word_two, n=3, deeper_web_search=False):
 
 def FindRelationshipJson(word_one, word_two, json_path, n=3, deeper_web_search=False):
         snippet_list = SearchJsonFile(word_one, word_two, json_path)
-        
-        snippet_list.append(google_one)
-        snippet_list.append(google_two)
-        snippet_list.append(google_three)
 
         scores = []
         cur_size = len(snippet_list)
@@ -140,11 +136,6 @@ def FindRelationshipJson(word_one, word_two, json_path, n=3, deeper_web_search=F
 # add additional argument for filtered json file,
 def FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_path, n=3, deeper_web_search=False):
         snippet_list = SearchJsonFile(word_one, word_two, json_path, modified_json_path)
-        
-
-        snippet_list.append(google_one)
-        snippet_list.append(google_two)
-        snippet_list.append(google_three)
 
         scores = []
         cur_size = len(snippet_list)
@@ -152,11 +143,12 @@ def FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_pa
                 snippet = snippet_list[i]
                 updated_snippet = ScoreSentence(snippet, word_one, word_two)
                 scores.append(updated_snippet)
-                
+
         google_result = SearchGoogle(word_one, word_two, deeper_web_search=False)
         snippet_list.extend(google_result)
         base_score = google_base_weight
         for i in range(cur_size, len(snippet_list)):
+                snippet = snippet_list[i]
                 updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score)
                 scores.append(updated_snippet)
                 
@@ -273,7 +265,7 @@ def SearchGoogle(word_one, word_two, deeper_web_search=False):
         item_one = word_one.replace(' ', '+')
         item_two = word_two.replace(' ', '+')
         google_query = 'https://www.google.com/search?q='+item_one+'+'+item_two
-        
+
         # getting snippets from google search
         page = requests.get(google_query)
         html_page = page.text
@@ -287,7 +279,7 @@ def SearchGoogle(word_one, word_two, deeper_web_search=False):
                 full_link = re.split(":(?=http)",link["href"].replace("/url?q=",""))
                 print(full_link)
                 cur_html_page = requests.get(google_query).text
-                #print(cur_html_page)
+                print(cur_html_page)
                 soup = BeautifulSoup(cur_html_page, "html.parser")
         
         # direct snippets from google
