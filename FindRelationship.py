@@ -220,7 +220,7 @@ def LemmatizeEntireFile(input_path, output_path):
         with open(output_path, 'w') as output_file:
                 output_file.write(json.dumps(json_data))
 
-def SearchJsonFile(word_one, word_two, path, modified_json_path=None):
+def SearchJsonFile(word_one, word_two, path, modified_json_path=None, max_limit=40):
         snippets = []
         with open(path) as json_file:
                 simplified_one = Lemmatization(word_one).lower()
@@ -240,6 +240,9 @@ def SearchJsonFile(word_one, word_two, path, modified_json_path=None):
                                                 for j in range(len(sentences)):
                                                         if (simplified_one in sentences[j] or simplified_two in sentences[j]):
                                                                 snippets.append(json_data[i]['abstract'].split(".")[j] + ".")
+                                        # stop after hitting max amount
+                                        if (len(snippets) >= max_limit):
+                                                break
                                         
                 # searching regular json file
                 else:
@@ -255,7 +258,10 @@ def SearchJsonFile(word_one, word_two, path, modified_json_path=None):
                                 for i in range(len(sentences)):
                                         if (simplified_one in sentences[i]) or (simplified_two in sentences[i]):
                                                 snippets.append(value['abstract'].split(".")[i] + ".")
-                        
+                                
+                                # stop after hitting max amount
+                                if (len(snippets) >= max_limit):
+                                        break
 
         return snippets
 
@@ -279,14 +285,25 @@ def SearchGoogle(word_one, word_two, deeper_web_search=False):
                 full_link = re.split(":(?=http)",link["href"].replace("/url?q=",""))
                 print(full_link)
                 cur_html_page = requests.get(google_query).text
-                print(cur_html_page)
                 soup = BeautifulSoup(cur_html_page, "html.parser")
+                # print(soup.prettify())
+                # for elem in soup(text=re.compile(r' #\S{11}')):
+                        # check if possible snippet
+                        # if (word_one in elem.parent) or (word_two in elem.parent):
+                        #         print(elem.parent)
+                        # print(elem.parent)
+                pattern_one = re.compile(word_one)
+                pattern_two = re.compile(word_two)
+                for tag in soup.find_all(True):
+                        if (word_one in tag or word_two in tag):
+                                print(tag)
+                
         
         # direct snippets from google
         for item in snippet_soup:
                 # dont want repeats
                 to_add = item.getText(strip=True)
-                if (to_add not in snippets):
+                if (any(to_add in string for string in snippets)):
                         #print("hi....")
                         #print(to_add)
                         
