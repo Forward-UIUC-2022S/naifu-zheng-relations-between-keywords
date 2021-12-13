@@ -170,8 +170,8 @@ def PrintBestScores(scores, n):
         #scores = scores.sort()
         scores.sort(key=attrgetter('score'))
 
-        for i in range(len(scores)):
-                print(scores[i].score)
+        # for i in range(len(scores)):
+        #         print(scores[i].score)
 
         if (n > len(scores)):
                 print("Not enough good snippets found. Returning top " + len(scores) + " snippets instead")
