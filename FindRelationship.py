@@ -3,6 +3,7 @@ from SnippetDetails import SnippetDetails
 #import nltk import Tree
 from spacy.pipeline.dep_parser import DEFAULT_PARSER_MODEL
 from urllib.request import Request, urlopen
+import urllib.request
 import requests
 
 from bs4 import BeautifulSoup
@@ -279,25 +280,39 @@ def SearchGoogle(word_one, word_two, deeper_web_search=False):
         soup = BeautifulSoup(html_page, "html.parser")
         snippet_soup = soup.select(".s3v9rd.AP7Wnd")
 
-        # get links from 
-        # https://stackoverflow.com/questions/25471450/python-getting-all-links-from-a-google-search-result-page
-        for link in soup.find_all("a",href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
-                full_link = re.split(":(?=http)",link["href"].replace("/url?q=",""))
-                print(full_link)
-                cur_html_page = requests.get(google_query).text
-                soup = BeautifulSoup(cur_html_page, "html.parser")
-                # print(soup.prettify())
-                # for elem in soup(text=re.compile(r' #\S{11}')):
-                        # check if possible snippet
-                        # if (word_one in elem.parent) or (word_two in elem.parent):
-                        #         print(elem.parent)
-                        # print(elem.parent)
-                pattern_one = re.compile(word_one)
-                pattern_two = re.compile(word_two)
-                for tag in soup.find_all(True):
-                        if (word_one in tag or word_two in tag):
-                                print(tag)
+        # TODO: Work on Deep search
+        # # get links from 
+        # # https://stackoverflow.com/questions/25471450/python-getting-all-links-from-a-google-search-result-page
+        # for link in soup.find_all("a",href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
+        #         full_link = re.split(":(?=http)",link["href"].replace("/url?q=",""))
+        #         print(full_link)
+        #         cur_html_page = requests.get(google_query).text
+        #         soup = BeautifulSoup(cur_html_page, "html.parser")
+        #         # print(soup.prettify())
+        #         # for elem in soup(text=re.compile(r' #\S{11}')):
+        #                 # check if possible snippet
+        #                 # if (word_one in elem.parent) or (word_two in elem.parent):
+        #                 #         print(elem.parent)
+        #                 # print(elem.parent)
+        #         pattern_one = re.compile(word_one)
+        #         pattern_two = re.compile(word_two)
+        #         # for tag in soup.find_all(True):
+        #         #         if (word_one in tag or word_two in tag):
+        #         #                 print(tag)
+
+        # to search 
+        # soup = BeautifulSoup(html_page, 'lxml')
+        # for result in soup.select('.tF2Cxc'):
+        #         link = result.select_one('.yuRUbf a')['href']
+        #         print(link, sep='\n')
+        
+        # links = soup.findAll("a")
+        # print(links)
+        # for link in soup.find_all("a",href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
+        #         print(re.split(":(?=http)",link["href"].replace("/url?q=","")))
                 
+                
+
         
         # direct snippets from google
         for item in snippet_soup:
