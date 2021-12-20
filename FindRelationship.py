@@ -3,14 +3,12 @@ from SnippetDetails import SnippetDetails
 #import nltk import Tree
 from spacy.pipeline.dep_parser import DEFAULT_PARSER_MODEL
 from urllib.request import Request, urlopen
-import urllib.request
 import requests
 
 from bs4 import BeautifulSoup
 from operator import attrgetter
 #from googlesearch import search
 from googlesearch.googlesearch import GoogleSearch
-import re
 
 # progress bar
 from tqdm import tqdm
@@ -32,6 +30,9 @@ import json
 google_base_weight = 100
 google_weight_scale = 5
 max_search_count = 20
+
+# element to search in the json file, change to whatever is needed
+element_to_search = "abstract"
 
 nlp = spacy.load("en_core_web_sm")
 # add default dependency parsing with spacy
@@ -211,7 +212,7 @@ def LemmatizeEntireFile(input_path, output_path):
                 json_data = json_data[:size_to_lemma]
                 for i in tqdm(range(size_to_lemma)):
                         # value = json_data[i]
-                        json_data[i]['abstract'] = Lemmatization(json_data[i]['abstract'])
+                        json_data[i][''] = Lemmatization(json_data[i][element_to_search])
                         # lemmatized = Lemmatization(value['abstract'])
                         # to_write = {
                         #         "abstract" : lemmatized,
@@ -233,14 +234,14 @@ def SearchJsonFile(word_one, word_two, path, modified_json_path=None, max_limit=
                                 modified_json_data = json.load(modified_json_file)
                                 length = min(len(json_data), len(modified_json_data))
                                 for i in range(length):
-                                        snippet = modified_json_data[i]['abstract'].lower()
+                                        snippet = modified_json_data[i][element_to_search].lower()
                                         if (simplified_one in snippet or simplified_two in snippet):
                                                 # print(snippet)
                                                 # print(json_data[i]['abstract'])
                                                 sentences = snippet.split(".")
                                                 for j in range(len(sentences)):
                                                         if (simplified_one in sentences[j] or simplified_two in sentences[j]):
-                                                                snippets.append(json_data[i]['abstract'].split(".")[j] + ".")
+                                                                snippets.append(json_data[i][element_to_search].split(".")[j] + ".")
                                         # stop after hitting max amount
                                         if (len(snippets) >= max_limit):
                                                 break
@@ -253,12 +254,12 @@ def SearchJsonFile(word_one, word_two, path, modified_json_path=None, max_limit=
                         # search for abstracts that fit the expected path
                         for value in json_data:
                                 #simplified_abstract = Lemmatization(value['abstract'])
-                                compare = value['abstract'].replace(" ", "")
+                                compare = value[element_to_search].replace(" ", "")
                                 # check each sentence
                                 sentences = compare.split(".")
                                 for i in range(len(sentences)):
                                         if (simplified_one in sentences[i]) or (simplified_two in sentences[i]):
-                                                snippets.append(value['abstract'].split(".")[i] + ".")
+                                                snippets.append(value[element_to_search].split(".")[i] + ".")
                                 
                                 # stop after hitting max amount
                                 if (len(snippets) >= max_limit):

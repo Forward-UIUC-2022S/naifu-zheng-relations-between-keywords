@@ -1,7 +1,7 @@
 # Meaningful-Relations-Between-Keywords
 
 ## Overall Design
-This module will receive an input of 2 keywords, and attempt to parse corpus:
+This module will receive an input of 2 keywords, and attempt to parse corpus(searching "abstract" element, but can be easily changed):
 https://arxiv.org/
 along with google search results
 
@@ -30,14 +30,6 @@ FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_path, 
 Uses modified_json_path to search for keywords, but still returns snippets from json_path. Note: json_path will need to be the same input_path given in LemmatizeEntireFile, otherwise the wrong snippet may be rated.
 
 
-### Example:
-When calling the function with keywords like
-b-tree and data structures,
-
-Up to three(default) example sentences that relate to these keywords can be returned, like
-"A B-tree is a tree data structure that keeps data sorted and allows searches, insertions, and deletions in logarithmic amortized time"
-
-
 ### Algorithmic Design / Model Implementation:
 Current Model:
 After breaking down a snippet using SpaCy, 
@@ -64,21 +56,60 @@ Here is a flowchart explaining how the snippets are scored
 ![Scoring Flowchart](https://github.com/Forward-UIUC-2021F/Meaningful-Relations-Between-Keywords/blob/main/Scoring.png)
 
 
-### Packages:
+### Packages and Dependencies:
 natural language processing:
 Spacy
 Download using:
 pip install -U spacy
 
+Copying files(only used for taking the lemma of entire files):
+pip install shutil
 
-Searching corpus arxiv using snapshot JSON file:
+Searching corpus arxiv using snapshot JSON file(one example file included):
 filtered_arxiv.json
 
 Google web requests:
-using Requests python library
+using Requests python library:
+pip install requests
 
 Using TQDM to display progress bar:
 https://github.com/tqdm/tqdm
 Download using:
 pip install tqdm
 
+Urllib is a standard python library, no install needed. 
+
+
+### Example:
+Once dependencies are installed, check to see everything works with the main file with 
+LemmatizeEntireFile(input_path, output_path)
+and
+FindRelationshipJson(keyword_1,keyword_2,json_file)
+
+When calling the function with keywords like
+b-tree and data structures,
+
+Up to three(default) example sentences that relate to these keywords can be returned, like
+"A B-tree is a tree data structure that keeps data sorted and allows searches, insertions, and deletions in logarithmic amortized time"
+
+### File Structure:
+Meaningful-Relations-Between-Keywords/
+    - README.md
+    - FindRelationship.py/
+    - Overall_Flowchart.png/
+    - Scoring.png/
+    - SnippetDetails.py/
+    - __init__.py/
+    - main.py/
+
+Important files:
+FindRelationship.py: holds all relevant functions
+SnippetDetails.py: Class to hold each snippet results and details
+main.py: main function for testing or running any needed 
+
+### Issues and Future Work
+* Inconsistency of finding and rating snippets with keywords longer than 1 word (i.e. "data structure")
+* Slow to find and store the lemma of all snippets in a given database
+* Need to implement additional flexibility to searching the json file(needs manual input currently, default "abstract")
+
+### Demo Video
