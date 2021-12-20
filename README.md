@@ -15,10 +15,10 @@ FindRelationshipJson(String word_one, String word_two, json_path, int n=3, bool 
 Additional parameter to search a json file for additional snippets if needed.
 
 FindRelationshipGivenSentences(String word_one, String word_two, String[] list, int n=3):
-Instead of searching the web or a file, the sentences are already given and can be directly scored for the best n snippets.
+Instead of searching the web or a file, the sentences are already given and can be directly scored for the best n snippets. Only rates the list, does not attempt to find additional snippets.
 
 ScoreSentence(snippet, word_one, word_two, base_score=0):
-Scores a snippet based off of the algorithm mentioned below, returning an integer value that can be negative, 0, or positive. Starts with a default value of 0, but additional weights can be added
+Scores a snippet based off of the algorithm mentioned below, returning an integer value that can be negative, 0, or positive. Starts with a default value of 0, but additional weights can be added. Returns a SnippetDetails object, where the score can be extracted taking score element(i.e. returned_object.score)
 
 SearchJsonFile(word_one, word_two, path):
 Searches through the inputted json file for sentences/snippets that contain word one and/or word two.
@@ -77,7 +77,7 @@ https://github.com/tqdm/tqdm
 Download using:
 pip install tqdm
 
-Urllib is a standard python library, no install needed. 
+Urllib and unittest are part of the standard python library, no install needed.
 
 
 ### Example:
@@ -108,8 +108,10 @@ SnippetDetails.py: Class to hold each snippet results and details
 main.py: main function for testing or running any needed 
 
 ### Issues and Future Work
+* Deeper search option still needs to be implemented, currently the parameter does nothing
 * Inconsistency of finding and rating snippets with keywords longer than 1 word (i.e. "data structure")
 * Slow to find and store the lemma of all snippets in a given database
 * Need to implement additional flexibility to searching the json file(needs manual input currently, default "abstract")
+* Improve snippets taken from the web, lots of uneeded details at the end like date, site name, categories, etc.
 
 ### Demo Video

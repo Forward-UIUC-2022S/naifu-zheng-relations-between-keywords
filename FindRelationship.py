@@ -116,16 +116,17 @@ def FindRelationshipJson(word_one, word_two, json_path, n=3, deeper_web_search=F
 
         scores = []
         cur_size = len(snippet_list)
+        base_score = google_base_weight
         for i in range(cur_size):
                 snippet = snippet_list[i]
-                updated_snippet = ScoreSentence(snippet, word_one, word_two)
+                updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score/2)
                 scores.append(updated_snippet)
 
-        google_result = SearchGoogle(word_one, word_two, deeper_web_search=False)
+        google_result = SearchGoogle(word_one, word_two, deeper_web_search)
         snippet_list.extend(google_result)
         
-        base_score = google_base_weight
         for i in range(cur_size, len(snippet_list)):
+                snippet = snippet_list[i]
                 updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score)
                 scores.append(updated_snippet)
                 
@@ -141,14 +142,14 @@ def FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_pa
 
         scores = []
         cur_size = len(snippet_list)
+        base_score = google_base_weight
         for i in range(cur_size):
                 snippet = snippet_list[i]
-                updated_snippet = ScoreSentence(snippet, word_one, word_two)
+                updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score/2)
                 scores.append(updated_snippet)
 
-        google_result = SearchGoogle(word_one, word_two, deeper_web_search=False)
+        google_result = SearchGoogle(word_one, word_two, deeper_web_search)
         snippet_list.extend(google_result)
-        base_score = google_base_weight
         for i in range(cur_size, len(snippet_list)):
                 snippet = snippet_list[i]
                 updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score)
@@ -175,7 +176,7 @@ def PrintBestScores(scores, n):
         #         print(scores[i].score)
 
         if (n > len(scores)):
-                print("Not enough good snippets found. Returning top " + len(scores) + " snippets instead")
+                print("Not enough good snippets found. Returning top " + str(len(scores)) + " snippets instead")
 
         snippet_count = min(len(scores), n)
         print("Printing top " + str(snippet_count) + " snippets")
@@ -208,11 +209,11 @@ def LemmatizeEntireFile(input_path, output_path):
                 print("LENGTH =========== ")
                 print(len(json_data))
                 #cut_json = json_data[:295306]
-                size_to_lemma = 50000
+                size_to_lemma = min(50000, len(json_data))
                 json_data = json_data[:size_to_lemma]
                 for i in tqdm(range(size_to_lemma)):
                         # value = json_data[i]
-                        json_data[i][''] = Lemmatization(json_data[i][element_to_search])
+                        json_data[i][element_to_search] = Lemmatization(json_data[i][element_to_search])
                         # lemmatized = Lemmatization(value['abstract'])
                         # to_write = {
                         #         "abstract" : lemmatized,
@@ -312,17 +313,16 @@ def SearchGoogle(word_one, word_two, deeper_web_search=False):
         # for link in soup.find_all("a",href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
         #         print(re.split(":(?=http)",link["href"].replace("/url?q=","")))
                 
-                
-
         
         # direct snippets from google
         for item in snippet_soup:
                 # dont want repeats
                 to_add = item.getText(strip=True)
+                to_add = to_add.replace("-", "")
                 if (any(to_add in string for string in snippets)):
-                        #print("hi....")
-                        #print(to_add)
-                        
+                        # google repeated same results, ignore this item
+                        continue
+                if (word_one in to_add or word_two in to_add):
                         snippets.append(to_add)
                         if (len(snippets) >= max_search_count):
                                 break
