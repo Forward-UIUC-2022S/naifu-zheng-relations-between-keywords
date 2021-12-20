@@ -115,3 +115,6 @@ main.py: main function for testing or running any needed
 * Improve snippets taken from the web, lots of uneeded details at the end like date, site name, categories, etc.
 
 ### Demo Video
+youtube link:
+https://www.youtube.com/watch?v=BkGTvdV1ZM4&t=1s
+[<img src="https://img.youtube.com/vi/BkGTvdV1ZM4/maxresdefault.jpg" width="50%">](https://youtu.be/BkGTvdV1ZM4)
