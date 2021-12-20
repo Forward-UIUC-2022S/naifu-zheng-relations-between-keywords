@@ -8,25 +8,39 @@ along with google search results
 and return up to three of the best snippets that describe the relationship between the two keywords
 
 ## Functions/Functional Design:
+```
 FindRelationship(String word_one, String word_two, int n=3, bool deeper_web_search=False):
+```
 The function will return a string list of max size n(default 3), which will include the the three snippets that best describe the relationship of the keywords based off web results and rankings. Paramater deeper_web_search will attempt to search additional websites for better snippets if set as true.
 
+```
 FindRelationshipJson(String word_one, String word_two, json_path, int n=3, bool deeper_web_search=False):
+```
 Additional parameter to search a json file for additional snippets if needed.
 
+```
 FindRelationshipGivenSentences(String word_one, String word_two, String[] list, int n=3):
+```
 Instead of searching the web or a file, the sentences are already given and can be directly scored for the best n snippets. Only rates the list, does not attempt to find additional snippets.
 
+```
 ScoreSentence(snippet, word_one, word_two, base_score=0):
+```
 Scores a snippet based off of the algorithm mentioned below, returning an integer value that can be negative, 0, or positive. Starts with a default value of 0, but additional weights can be added. Returns a SnippetDetails object, where the score can be extracted taking score element(i.e. returned_object.score)
 
+```
 SearchJsonFile(word_one, word_two, path):
+```
 Searches through the inputted json file for sentences/snippets that contain word one and/or word two.
 
+```
 LemmatizeEntireFile(input_path, output_path):
+```
 Takes the lemma of the entire input json file and writes it into the output_path. Useful for better search accuracy for keywords. Should be used in conjunction with FindRelationshipModifiedJson
 
+```
 FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_path, n=3, deeper_web_search=False):
+```
 Uses modified_json_path to search for keywords, but still returns snippets from json_path. Note: json_path will need to be the same input_path given in LemmatizeEntireFile, otherwise the wrong snippet may be rated.
 
 
@@ -93,6 +107,7 @@ Up to three(default) example sentences that relate to these keywords can be retu
 "A B-tree is a tree data structure that keeps data sorted and allows searches, insertions, and deletions in logarithmic amortized time"
 
 ### File Structure:
+```
 Meaningful-Relations-Between-Keywords/
     - README.md
     - FindRelationship.py/
@@ -101,6 +116,7 @@ Meaningful-Relations-Between-Keywords/
     - SnippetDetails.py/
     - __init__.py/
     - main.py/
+```
 
 Important files:
 FindRelationship.py: holds all relevant functions
@@ -113,6 +129,8 @@ main.py: main function for testing or running any needed
 * Slow to find and store the lemma of all snippets in a given database
 * Need to implement additional flexibility to searching the json file(needs manual input currently, default "abstract")
 * Improve snippets taken from the web, lots of uneeded details at the end like date, site name, categories, etc.
+* Improve runtime of taking the lemma of files.
+* Currently taking a max limit of 40 snippets from json file, should be changed to allow for more user input.
 
 ### Demo Video
 youtube link:
