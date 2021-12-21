@@ -9,7 +9,6 @@ from bs4 import BeautifulSoup
 from operator import attrgetter
 #from googlesearch import search
 from googlesearch.googlesearch import GoogleSearch
-import re
 
 # progress bar
 from tqdm import tqdm
@@ -31,6 +30,9 @@ import json
 google_base_weight = 100
 google_weight_scale = 5
 max_search_count = 20
+
+# element to search in the json file, change to whatever is needed
+element_to_search = "abstract"
 
 nlp = spacy.load("en_core_web_sm")
 # add default dependency parsing with spacy
@@ -114,16 +116,17 @@ def FindRelationshipJson(word_one, word_two, json_path, n=3, deeper_web_search=F
 
         scores = []
         cur_size = len(snippet_list)
+        base_score = google_base_weight
         for i in range(cur_size):
                 snippet = snippet_list[i]
-                updated_snippet = ScoreSentence(snippet, word_one, word_two)
+                updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score/2)
                 scores.append(updated_snippet)
 
-        google_result = SearchGoogle(word_one, word_two, deeper_web_search=False)
+        google_result = SearchGoogle(word_one, word_two, deeper_web_search)
         snippet_list.extend(google_result)
         
-        base_score = google_base_weight
         for i in range(cur_size, len(snippet_list)):
+                snippet = snippet_list[i]
                 updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score)
                 scores.append(updated_snippet)
                 
@@ -139,14 +142,14 @@ def FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_pa
 
         scores = []
         cur_size = len(snippet_list)
+        base_score = google_base_weight
         for i in range(cur_size):
                 snippet = snippet_list[i]
-                updated_snippet = ScoreSentence(snippet, word_one, word_two)
+                updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score/2)
                 scores.append(updated_snippet)
 
-        google_result = SearchGoogle(word_one, word_two, deeper_web_search=False)
+        google_result = SearchGoogle(word_one, word_two, deeper_web_search)
         snippet_list.extend(google_result)
-        base_score = google_base_weight
         for i in range(cur_size, len(snippet_list)):
                 snippet = snippet_list[i]
                 updated_snippet = ScoreSentence(snippet, word_one, word_two, base_score)
@@ -169,11 +172,11 @@ def PrintBestScores(scores, n):
         #scores = scores.sort()
         scores.sort(key=attrgetter('score'))
 
-        for i in range(len(scores)):
-                print(scores[i].score)
+        # for i in range(len(scores)):
+        #         print(scores[i].score)
 
         if (n > len(scores)):
-                print("Not enough good snippets found. Returning top " + len(scores) + " snippets instead")
+                print("Not enough good snippets found. Returning top " + str(len(scores)) + " snippets instead")
 
         snippet_count = min(len(scores), n)
         print("Printing top " + str(snippet_count) + " snippets")
@@ -206,11 +209,11 @@ def LemmatizeEntireFile(input_path, output_path):
                 print("LENGTH =========== ")
                 print(len(json_data))
                 #cut_json = json_data[:295306]
-                size_to_lemma = 50000
+                size_to_lemma = min(50000, len(json_data))
                 json_data = json_data[:size_to_lemma]
                 for i in tqdm(range(size_to_lemma)):
                         # value = json_data[i]
-                        json_data[i]['abstract'] = Lemmatization(json_data[i]['abstract'])
+                        json_data[i][element_to_search] = Lemmatization(json_data[i][element_to_search])
                         # lemmatized = Lemmatization(value['abstract'])
                         # to_write = {
                         #         "abstract" : lemmatized,
@@ -220,7 +223,7 @@ def LemmatizeEntireFile(input_path, output_path):
         with open(output_path, 'w') as output_file:
                 output_file.write(json.dumps(json_data))
 
-def SearchJsonFile(word_one, word_two, path, modified_json_path=None):
+def SearchJsonFile(word_one, word_two, path, modified_json_path=None, max_limit=40):
         snippets = []
         with open(path) as json_file:
                 simplified_one = Lemmatization(word_one).lower()
@@ -232,14 +235,17 @@ def SearchJsonFile(word_one, word_two, path, modified_json_path=None):
                                 modified_json_data = json.load(modified_json_file)
                                 length = min(len(json_data), len(modified_json_data))
                                 for i in range(length):
-                                        snippet = modified_json_data[i]['abstract'].lower()
+                                        snippet = modified_json_data[i][element_to_search].lower()
                                         if (simplified_one in snippet or simplified_two in snippet):
                                                 # print(snippet)
                                                 # print(json_data[i]['abstract'])
                                                 sentences = snippet.split(".")
                                                 for j in range(len(sentences)):
                                                         if (simplified_one in sentences[j] or simplified_two in sentences[j]):
-                                                                snippets.append(json_data[i]['abstract'].split(".")[j] + ".")
+                                                                snippets.append(json_data[i][element_to_search].split(".")[j] + ".")
+                                        # stop after hitting max amount
+                                        if (len(snippets) >= max_limit):
+                                                break
                                         
                 # searching regular json file
                 else:
@@ -249,13 +255,16 @@ def SearchJsonFile(word_one, word_two, path, modified_json_path=None):
                         # search for abstracts that fit the expected path
                         for value in json_data:
                                 #simplified_abstract = Lemmatization(value['abstract'])
-                                compare = value['abstract'].replace(" ", "")
+                                compare = value[element_to_search].replace(" ", "")
                                 # check each sentence
                                 sentences = compare.split(".")
                                 for i in range(len(sentences)):
                                         if (simplified_one in sentences[i]) or (simplified_two in sentences[i]):
-                                                snippets.append(value['abstract'].split(".")[i] + ".")
-                        
+                                                snippets.append(value[element_to_search].split(".")[i] + ".")
+                                
+                                # stop after hitting max amount
+                                if (len(snippets) >= max_limit):
+                                        break
 
         return snippets
 
@@ -273,23 +282,47 @@ def SearchGoogle(word_one, word_two, deeper_web_search=False):
         soup = BeautifulSoup(html_page, "html.parser")
         snippet_soup = soup.select(".s3v9rd.AP7Wnd")
 
-        # get links from 
-        # https://stackoverflow.com/questions/25471450/python-getting-all-links-from-a-google-search-result-page
-        for link in soup.find_all("a",href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
-                full_link = re.split(":(?=http)",link["href"].replace("/url?q=",""))
-                print(full_link)
-                cur_html_page = requests.get(google_query).text
-                print(cur_html_page)
-                soup = BeautifulSoup(cur_html_page, "html.parser")
+        # TODO: Work on Deep search
+        # # get links from 
+        # # https://stackoverflow.com/questions/25471450/python-getting-all-links-from-a-google-search-result-page
+        # for link in soup.find_all("a",href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
+        #         full_link = re.split(":(?=http)",link["href"].replace("/url?q=",""))
+        #         print(full_link)
+        #         cur_html_page = requests.get(google_query).text
+        #         soup = BeautifulSoup(cur_html_page, "html.parser")
+        #         # print(soup.prettify())
+        #         # for elem in soup(text=re.compile(r' #\S{11}')):
+        #                 # check if possible snippet
+        #                 # if (word_one in elem.parent) or (word_two in elem.parent):
+        #                 #         print(elem.parent)
+        #                 # print(elem.parent)
+        #         pattern_one = re.compile(word_one)
+        #         pattern_two = re.compile(word_two)
+        #         # for tag in soup.find_all(True):
+        #         #         if (word_one in tag or word_two in tag):
+        #         #                 print(tag)
+
+        # to search 
+        # soup = BeautifulSoup(html_page, 'lxml')
+        # for result in soup.select('.tF2Cxc'):
+        #         link = result.select_one('.yuRUbf a')['href']
+        #         print(link, sep='\n')
+        
+        # links = soup.findAll("a")
+        # print(links)
+        # for link in soup.find_all("a",href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
+        #         print(re.split(":(?=http)",link["href"].replace("/url?q=","")))
+                
         
         # direct snippets from google
         for item in snippet_soup:
                 # dont want repeats
                 to_add = item.getText(strip=True)
-                if (to_add not in snippets):
-                        #print("hi....")
-                        #print(to_add)
-                        
+                to_add = to_add.replace("-", "")
+                if (any(to_add in string for string in snippets)):
+                        # google repeated same results, ignore this item
+                        continue
+                if (word_one in to_add or word_two in to_add):
                         snippets.append(to_add)
                         if (len(snippets) >= max_search_count):
                                 break
