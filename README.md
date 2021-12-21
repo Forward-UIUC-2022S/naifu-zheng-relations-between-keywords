@@ -74,22 +74,30 @@ Here is a flowchart explaining how the snippets are scored
 natural language processing:
 Spacy
 Download using:
+```
 pip install -U spacy
+```
 
 Copying files(only used for taking the lemma of entire files):
+```
 pip install shutil
+```
 
 Searching corpus arxiv using snapshot JSON file(one example file included):
-filtered_arxiv.json
+https://drive.google.com/drive/folders/1KKthQ79Ge5xAHTRjnHAiWlvt-O3oUs9G?usp=sharing
 
 Google web requests:
 using Requests python library:
+```
 pip install requests
+```
 
 Using TQDM to display progress bar:
 https://github.com/tqdm/tqdm
 Download using:
+```
 pip install tqdm
+```
 
 Urllib and unittest are part of the standard python library, no install needed.
 
