@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from operator import attrgetter
 #from googlesearch import search
-from googlesearch.googlesearch import GoogleSearch
+# from googlesearch.googlesearch import GoogleSearch
 
 # progress bar
 from tqdm import tqdm
@@ -109,7 +109,7 @@ def FindRelationship(word_one, word_two, n=3, deeper_web_search=False):
                 if (base_score < 0):
                         base_score = 0
 
-        PrintBestScores(scores, n)
+        return PrintBestScores(scores, n)
 
 def FindRelationshipJson(word_one, word_two, json_path, n=3, deeper_web_search=False):
         snippet_list = SearchJsonFile(word_one, word_two, json_path)
@@ -134,7 +134,7 @@ def FindRelationshipJson(word_one, word_two, json_path, n=3, deeper_web_search=F
                 if (base_score < 0):
                         base_score = 0
                 
-        PrintBestScores(scores, n)
+        return PrintBestScores(scores, n)
 
 # add additional argument for filtered json file,
 def FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_path, n=3, deeper_web_search=False):
@@ -159,18 +159,19 @@ def FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_pa
                 if (base_score < 0):
                         base_score = 0
         
-        PrintBestScores(scores, n)
+        return PrintBestScores(scores, n)
 
 def FindRelationshipGivenSentences(word_one, word_two, list, n=3):
         scores = []
         for snippet in list:
                 updated_snippet = ScoreSentence(snippet, word_one, word_two)
                 scores.append(updated_snippet)
-        PrintBestScores(scores, n)
+        return PrintBestScores(scores, n)
         
 def PrintBestScores(scores, n):
         #scores = scores.sort()
-        scores.sort(key=attrgetter('score'))
+        scores.sort(key=attrgetter('score'), reverse=True)
+        return [s.string for s in scores[:n]]
 
         # for i in range(len(scores)):
         #         print(scores[i].score)

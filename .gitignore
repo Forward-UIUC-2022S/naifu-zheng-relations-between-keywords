@@ -1,2 +1,5 @@
 sample_arxiv.json
 sample_arxiv_lemmatized.json
+
+**/__pycache__/**
+env/
