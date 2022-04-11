@@ -31,7 +31,7 @@ Scores a snippet based off of the algorithm mentioned below, returning an intege
 ```
 SearchJsonFile(word_one, word_two, path):
 ```
-Searches through the inputted json file for sentences/snippets that contain word one and/or word two.
+Searches through the inputted json file for sentences/snippets that contain word one and/or word two. Applies whoosh to index the JSON file for faster search.
 
 ```
 LemmatizeEntireFile(input_path, output_path):
@@ -43,6 +43,15 @@ FindRelationshipModifiedJson(word_one, word_two, json_path, modified_json_path, 
 ```
 Uses modified_json_path to search for keywords, but still returns snippets from json_path. Note: json_path will need to be the same input_path given in LemmatizeEntireFile, otherwise the wrong snippet may be rated.
 
+```
+SearchGoogleList(word_one, word_list, deeper_web_search=False):
+```
+Given a keyword word_one, and a list of keywords word_list, return a list of snippets of sentences, each of the snippet explains the relation between the keywords.
+
+```
+SnippetPreprocess(snippetsToProcess:list):
+```
+Takes a list of sentences as inputs, prune the unwanted information such as dates, urls. Also rules out the sentences which are too short to be considered.
 
 ### Algorithmic Design / Model Implementation:
 Current Model:
@@ -100,6 +109,13 @@ pip install tqdm
 ```
 
 Urllib and unittest are part of the standard python library, no install needed.
+
+```
+!pip install Whoosh
+```
+Install Whoosh to index and search JSON input. Tutorials of Whoosh listed below:
+https://www.kaggle.com/code/mxfeinberg/using-whoosh-for-indexing-and-querying/notebook
+https://whoosh.readthedocs.io/en/latest/schema.html
 
 
 ### Example:
