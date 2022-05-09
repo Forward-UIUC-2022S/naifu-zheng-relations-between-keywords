@@ -144,3 +144,43 @@ main.py: main function for testing or running any needed
 youtube link:
 https://www.youtube.com/watch?v=BkGTvdV1ZM4&t=1s
 [<img src="https://img.youtube.com/vi/BkGTvdV1ZM4/maxresdefault.jpg" width="50%">](https://youtu.be/BkGTvdV1ZM4)
+
+### Change Log
+Edits From Naifu Zheng, Spring 2022
+
+* For modularity, separated the functions within FindRelationship.py into two separate files according to the purposes of the functions. Moved the functions related to lemmatization, searching, preprocessing into the new file Search.py.
+
+* Function Added - SearchGoogleList(word_one, word_list, deeper_web_search=False) - similar to SearchGoogle(), also functions as a helper function called by FindRelationship() in FindRelationship.py. The difference between SearchGoogle() and SearchGoogleList() is that SearchGoogleList() can be called on a keyword and a keyword list, performing multiple google queries in a single function call.
+
+* Function Added - deepSearch(url, incomplete_snippet) - Takes an URL and an incomplete_snippet as input, find the complete sentence in the webpage of the URL. The purpose of this function is: since on the Google search pages, the abstract of the sentences can be abbreviated, and we want to show the full sentence to the users, so we use deepSearch() to go into the urls and get the complete snippets.
+
+* Function Added - SnippetPreprocess(snippetsToProcess:list) - Takes a list of sentences as inputs, prune the unwanted information such as dates, urls using regular expression. Also rules out the sentences which are too short to be considered as example sentences.
+
+* Function Modified - SearchJsonFile(word_one, word_two, json_data, modified_json_path=None, max_limit=40) - Added Whoosh indexing and querying APIs to improve the runtime of the function. Before employing the index, calling FindRelationshipJson() on a pair of keywords takes about 8 seconds. After using Whoosh, calling the FindRelationshipJson() function on a pair of keywords takes only 3 - 5 seconds.
+```
+                if not os.path.exists("indexdir"):
+                        os.mkdir("indexdir")
+                        ix = index.create_in("indexdir", schema)
+                        writer = ix.writer()
+                        for paper in json_data:
+                                writer.add_document(id = paper["id"], title = paper["title"], abstract = paper["abstract"])
+                        writer.commit()
+                else:
+                        ix = open_dir("indexdir")
+                
+                
+                #search for abstracts that fit the expected path
+                searcher = ix.searcher()
+                proposed_time_strings = []
+                with ix.searcher() as searcher:
+                        parser = QueryParser("abstract", ix.schema, group=qparser.OrGroup)
+                        #querystring = u"query plan"# AND(content:months OR content:weeks OR content:days OR content:hours OR content:minutes OR content:seconds)"
+                        querystring = word_one + ' ' + word_two
+                        myquery = parser.parse(querystring)
+                        results = searcher.search(myquery, limit = 40)
+                        
+                        #print(len(results))
+                        for res in results:
+                                #print(res['title'])
+                                snippets.append(res["abstract"])
+```
