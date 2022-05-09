@@ -209,16 +209,17 @@ def SearchGoogle(word_one, word_two, deeper_web_search):
                         if (len(snippets) >= 20):              #changed max_search count to 30
                                 break
         preprocessed_snippets = SnippetPreprocess(snippets)
+        if not deeper_web_search:
+                return preprocessed_snippets
         deep_web_snippets = []
-        if deeper_web_search:
-                for snippet in preprocessed_snippets:
-                        if snippet[len(snippet) - 1] == '.':
+        for snippet in preprocessed_snippets:
+                if snippet[len(snippet) - 1] == '.':
+                        deep_web_snippets.append(snippet)
+                        continue
+                for url in hyper_link_soup:
+                        deep_search_result = deepSearch(url, snippet)
+                        if len(deep_search_result) > 0:
                                 deep_web_snippets.append(deep_search_result)
-                                continue
-                        for url in hyper_link_soup:
-                                deep_search_result = deepSearch(url, snippet)
-                                if len(deep_search_result) > 0:
-                                        deep_web_snippets.append(deep_search_result)
         return deep_web_snippets
 
 

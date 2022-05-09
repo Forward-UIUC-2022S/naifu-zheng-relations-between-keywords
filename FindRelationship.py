@@ -96,7 +96,7 @@ def ScoreSentence(snippet, word_one, word_two, base_score = 0):
 
         return snippet_details
 
-def FindRelationship(word_one, word_two, json_path,n=3, deeper_web_search=False):
+def FindRelationship(word_one, word_two, json_path,n, deeper_web_search):
         # TODO: search google and corpus for snippets of sentences containing
         # the relationship of word 1 and 2
 
