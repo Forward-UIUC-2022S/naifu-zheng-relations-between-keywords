@@ -124,6 +124,7 @@ Meaningful-Relations-Between-Keywords/
     - SnippetDetails.py/
     - __init__.py/
     - main.py/
+    - Search.py
 ```
 
 Important files:
@@ -184,3 +185,10 @@ Edits From Naifu Zheng, Spring 2022
                                 #print(res['title'])
                                 snippets.append(res["abstract"])
 ```
+* New Dependencies:
+    Whoosh can be installed with:
+    ```
+    pip install Whoosh
+    ```
+* Limitations and Future Works:
+    
