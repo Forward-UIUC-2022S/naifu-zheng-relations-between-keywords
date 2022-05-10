@@ -145,6 +145,8 @@ main.py: main function for testing or running any needed
 youtube link:
 https://www.youtube.com/watch?v=BkGTvdV1ZM4&t=1s
 [<img src="https://img.youtube.com/vi/BkGTvdV1ZM4/maxresdefault.jpg" width="50%">](https://youtu.be/BkGTvdV1ZM4)
+demo video for SP2022
+https://www.youtube.com/watch?v=91c7LiSCgK4
 
 ### Change Log
 Edits From Naifu Zheng, Spring 2022
@@ -191,7 +193,7 @@ Edits From Naifu Zheng, Spring 2022
     pip install Whoosh
     ```
 * Limitations and Future Works:
-    1. The function deepSearch(url, incomplete_snippet) needs to be modified for some specific html webpage structures, for example, the html paragraphs containing <strong> tags. In the webpage- https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/ - the sentence "RSA encryption is interesting because encryption is performed using the **public** key" has the "public" within <strong> tags, thus, the text scraped by getText() will be "thepublickey", which is inconsistent with "the public key" in the *incomplete_snippet* parameter, which will regard the find() result as not found.
+    1. The function deepSearch(url, incomplete_snippet) needs to be modified for some specific html webpage structures, for example, the html paragraphs containing "strong" html tags. In the webpage https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/ the sentence "RSA encryption is interesting because encryption is performed using the **public** key" has the "public" within "strong" tags, thus, the text scraped by getText() will be "thepublickey", which is inconsistent with "the public key" in the *incomplete_snippet* parameter, which will regard the find() result as not found.
     2. The part of code in SearchGoogle()(shown in the code chunk below) is brute force, which causes long O(n^2) runtime.
     ```
     for snippet in preprocessed_snippets:
