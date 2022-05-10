@@ -191,4 +191,18 @@ Edits From Naifu Zheng, Spring 2022
     pip install Whoosh
     ```
 * Limitations and Future Works:
+    1. The function deepSearch(url, incomplete_snippet) needs to be modified for some specific html webpage structures, for example, the html paragraphs containing <strong> tags. In the webpage- https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/ - the sentence "RSA encryption is interesting because encryption is performed using the **public** key" has the "public" within <strong> tags, thus, the text scraped by getText() will be "thepublickey", which is inconsistent with "the public key" in the *incomplete_snippet* parameter, which will regard the find() result as not found.
+    2. The part of code in SearchGoogle()(shown in the code chunk below) is brute force, which causes long O(n^2) runtime.
+    ```
+    for snippet in preprocessed_snippets:
+                print(snippet)
+                if snippet[len(snippet) - 1] == '.':
+                        deep_web_snippets.append(snippet)
+                        continue
+                for url in hyper_link_soup:
+                        deep_search_result = deepSearch(url, snippet)
+                        if len(deep_search_result) > 0:
+                                deep_web_snippets.append(deep_search_result)
+    ```
     
+    3. The result sentences from JSON files are better to be short snippets(1-3 sentences) instead of paragraphs.
